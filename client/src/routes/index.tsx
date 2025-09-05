@@ -19,6 +19,7 @@ import ShareRoute from './ShareRoute';
 import ChatRoute from './ChatRoute';
 import Search from './Search';
 import Root from './Root';
+import LandingPage from '~/components/Public/LandingPage';
 
 const AuthLayout = () => (
   <AuthContextProvider>
@@ -53,11 +54,16 @@ export const router = createBrowserRouter(
     },
     {
       path: '/',
+      element: <LandingPage />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
+      path: 'register',
       element: <StartupLayout />,
       errorElement: <RouteErrorBoundary />,
       children: [
         {
-          path: 'register',
+          index: true,
           element: <Registration />,
         },
         {
@@ -80,22 +86,22 @@ export const router = createBrowserRouter(
       errorElement: <RouteErrorBoundary />,
       children: [
         {
-          path: '/',
+          path: 'login',
           element: <LoginLayout />,
           children: [
             {
-              path: 'login',
+              index: true,
               element: <Login />,
             },
             {
-              path: 'login/2fa',
+              path: '2fa',
               element: <TwoFactorScreen />,
             },
           ],
         },
         dashboardRoutes,
         {
-          path: '/',
+          path: 'c',
           element: <Root />,
           children: [
             {
@@ -103,7 +109,7 @@ export const router = createBrowserRouter(
               element: <Navigate to="/c/new" replace={true} />,
             },
             {
-              path: 'c/:conversationId?',
+              path: ':conversationId?',
               element: <ChatRoute />,
             },
             {
