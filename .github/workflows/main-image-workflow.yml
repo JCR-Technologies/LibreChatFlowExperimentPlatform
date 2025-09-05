@@ -20,6 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Set lowercase repository owner
+      - name: Set lowercase repository owner
+        run: echo "REPO_OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Fetch tags and set the latest tag
         run: |
           git fetch --tags
@@ -61,8 +65,8 @@ jobs:
           file: ${{ matrix.file }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner | downcase }}/${{ matrix.image_name }}:${{ env.LATEST_TAG }}
-            ghcr.io/${{ github.repository_owner | downcase }}/${{ matrix.image_name }}:latest
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/${{ matrix.image_name }}:${{ env.LATEST_TAG }}
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/${{ matrix.image_name }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image_name }}:${{ env.LATEST_TAG }}
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image_name }}:latest
           platforms: linux/amd64,linux/arm64
