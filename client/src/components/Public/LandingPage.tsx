@@ -142,7 +142,7 @@ export default function LandingPage() {
             Flow Experiment Platform
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Discover and create AI-powered flow experiments for research and personal growth
+            Create, share, and explore digital flow experiments and contribute to citizen science around flow.
           </p>
           
           {/* Search Bar */}
@@ -162,7 +162,7 @@ export default function LandingPage() {
             onClick={handleStartExperiment}
             className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
-            Start Your Experiment
+            Create Your Experiment
             <ArrowRight className="ml-2 w-5 h-5" />
           </button>
         </div>

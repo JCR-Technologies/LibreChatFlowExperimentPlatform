@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useMediaQuery } from '@librechat/client';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { getConfigDefaults, PermissionTypes, Permissions } from 'librechat-data-provider';
+import { Home } from 'lucide-react';
 import type { ContextType } from '~/common';
 import ModelSelector from './Menus/Endpoints/ModelSelector';
 import { PresetsMenu, HeaderNewChat, OpenSidebar } from './Menus';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
-import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
 import { useHasAccess } from '~/hooks';
 
@@ -17,6 +17,7 @@ const defaultInterface = getConfigDefaults().interface;
 export default function Header() {
   const { data: startupConfig } = useGetStartupConfig();
   const { navVisible, setNavVisible } = useOutletContext<ContextType>();
+  const navigate = useNavigate();
 
   const interfaceConfig = useMemo(
     () => startupConfig?.interface ?? defaultInterface,
@@ -61,12 +62,9 @@ export default function Header() {
             {hasAccessToBookmarks === true && <BookmarkMenu />}
             {hasAccessToMultiConvo === true && <AddMultiConvo />}
             {isSmallScreen && (
-              <>
-                <ExportAndShareMenu
-                  isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
-                />
-                <TemporaryChat />
-              </>
+              <ExportAndShareMenu
+                isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
+              />
             )}
           </div>
         </div>
@@ -75,12 +73,19 @@ export default function Header() {
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />
-            <TemporaryChat />
           </div>
         )}
       </div>
-      {/* Empty div for spacing */}
-      <div />
+      {/* Home button in top-right corner */}
+      <div className="flex items-center">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center justify-center w-10 h-10 rounded-lg border border-border-light bg-surface-secondary hover:bg-surface-hover transition-colors"
+          aria-label="Go to Home"
+        >
+          <Home className="w-5 h-5 text-text-primary" />
+        </button>
+      </div>
     </div>
   );
 }
