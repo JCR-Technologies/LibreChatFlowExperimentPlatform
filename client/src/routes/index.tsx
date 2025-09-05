@@ -10,6 +10,8 @@ import {
 } from '~/components/Auth';
 import AgentMarketplace from '~/components/Agents/Marketplace';
 import { OAuthSuccess, OAuthError } from '~/components/OAuth';
+import LandingPageWrapper from '~/components/Landing/LandingPageWrapper';
+import ProtectedRoute from '~/components/ProtectedRoute';
 import { AuthContextProvider } from '~/hooks/AuthContext';
 import RouteErrorBoundary from './RouteErrorBoundary';
 import StartupLayout from './Layouts/Startup';
@@ -52,33 +54,37 @@ export const router = createBrowserRouter(
       ],
     },
     {
-      path: '/',
-      element: <StartupLayout />,
-      errorElement: <RouteErrorBoundary />,
-      children: [
-        {
-          path: 'register',
-          element: <Registration />,
-        },
-        {
-          path: 'forgot-password',
-          element: <RequestPasswordReset />,
-        },
-        {
-          path: 'reset-password',
-          element: <ResetPassword />,
-        },
-      ],
-    },
-    {
       path: 'verify',
       element: <VerifyEmail />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
+      path: '/',
+      element: <LandingPageWrapper />,
       errorElement: <RouteErrorBoundary />,
     },
     {
       element: <AuthLayout />,
       errorElement: <RouteErrorBoundary />,
       children: [
+        {
+          path: '/',
+          element: <StartupLayout />,
+          children: [
+            {
+              path: 'register',
+              element: <Registration />,
+            },
+            {
+              path: 'forgot-password',
+              element: <RequestPasswordReset />,
+            },
+            {
+              path: 'reset-password',
+              element: <ResetPassword />,
+            },
+          ],
+        },
         {
           path: '/',
           element: <LoginLayout />,
@@ -99,24 +105,36 @@ export const router = createBrowserRouter(
           element: <Root />,
           children: [
             {
-              index: true,
-              element: <Navigate to="/c/new" replace={true} />,
-            },
-            {
               path: 'c/:conversationId?',
-              element: <ChatRoute />,
+              element: (
+                <ProtectedRoute>
+                  <ChatRoute />
+                </ProtectedRoute>
+              ),
             },
             {
               path: 'search',
-              element: <Search />,
+              element: (
+                <ProtectedRoute>
+                  <Search />
+                </ProtectedRoute>
+              ),
             },
             {
               path: 'agents',
-              element: <AgentMarketplace />,
+              element: (
+                <ProtectedRoute>
+                  <AgentMarketplace />
+                </ProtectedRoute>
+              ),
             },
             {
               path: 'agents/:category',
-              element: <AgentMarketplace />,
+              element: (
+                <ProtectedRoute>
+                  <AgentMarketplace />
+                </ProtectedRoute>
+              ),
             },
           ],
         },

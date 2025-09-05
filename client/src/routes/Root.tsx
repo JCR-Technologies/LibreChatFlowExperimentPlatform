@@ -60,10 +60,15 @@ export default function Root() {
     logout('/login?redirect=false');
   };
 
+  // Allow landing page to render for non-authenticated users
+  // Other routes will still require authentication through their individual components
+
+  // For non-authenticated users, just render the outlet (landing page)
   if (!isAuthenticated) {
-    return null;
+    return <Outlet context={{ navVisible, setNavVisible } satisfies ContextType} />;
   }
 
+  // For authenticated users, render the full app with navigation
   return (
     <SetConvoProvider>
       <FileMapContext.Provider value={fileMap}>

@@ -4,11 +4,10 @@ import { useOutletContext } from 'react-router-dom';
 import { getConfigDefaults, PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { ContextType } from '~/common';
 import ModelSelector from './Menus/Endpoints/ModelSelector';
-import { PresetsMenu, HeaderNewChat, OpenSidebar } from './Menus';
+import { PresetsMenu, HeaderNewChat, OpenSidebar, HeaderHome } from './Menus';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
-import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
 import { useHasAccess } from '~/hooks';
 
@@ -62,20 +61,20 @@ export default function Header() {
             {hasAccessToMultiConvo === true && <AddMultiConvo />}
             {isSmallScreen && (
               <>
+                <HeaderHome />
                 <ExportAndShareMenu
                   isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
                 />
-                <TemporaryChat />
               </>
             )}
           </div>
         </div>
         {!isSmallScreen && (
           <div className="flex items-center gap-2">
+            <HeaderHome />
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />
-            <TemporaryChat />
           </div>
         )}
       </div>
