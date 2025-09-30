@@ -102,7 +102,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   const handleArtifactsToggle = useCallback(() => {
     const currentState = artifacts.toggleState;
     if (!currentState || currentState === '') {
-      artifacts.debouncedChange({ value: ArtifactModes.DEFAULT });
+      artifacts.debouncedChange({ value: ArtifactModes.SHADCNUI });
     } else {
       artifacts.debouncedChange({ value: '' });
     }
