@@ -97,7 +97,6 @@ function Chat() {
           />
         </div>
       ))}
-      <ForkSettings />
     </div>
   );
 }

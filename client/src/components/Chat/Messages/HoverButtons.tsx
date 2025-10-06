@@ -237,8 +237,8 @@ const HoverButtons = ({
         isLast={isLast}
       />
 
-      {/* Feedback Buttons */}
-      {!isCreatedByUser && (
+      {/* Feedback Buttons (Disabled in Flow Research Platform) */}
+      {false && (
         <Feedback handleFeedback={handleFeedback} feedback={message.feedback} isLast={isLast} />
       )}
 
