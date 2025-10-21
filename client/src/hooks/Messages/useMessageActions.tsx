@@ -129,7 +129,12 @@ export default function useMessageActions(props: TMessageActions) {
     } else if (assistant) {
       return assistant.name ?? 'Assistant';
     } else {
-      return message?.sender;
+      // Format sender name for Flow Architect AI
+      const sender = message?.sender ?? '';
+      if (sender && (sender.includes('GPT') || sender.includes('Claude') || sender.includes('Gemini') || sender.includes('Assistant'))) {
+        return `Flow Architect (${sender})`;
+      }
+      return sender;
     }
   }, [message, agent, assistant, UsernameDisplay, user, localize]);
 

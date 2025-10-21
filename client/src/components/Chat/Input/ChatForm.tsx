@@ -32,6 +32,8 @@ import SendButton from './SendButton';
 import EditBadges from './EditBadges';
 import BadgeRow from './BadgeRow';
 import Mention from './Mention';
+import SelectionButtons from './SelectionButtons';
+import { useFlowSelection } from '~/hooks/useFlowSelection';
 import store from '~/store';
 
 const ChatForm = memo(({ index = 0 }: { index?: number }) => {
@@ -129,7 +131,41 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     isSubmitting: isSubmitting || isSubmittingAdded,
   });
 
-  const { submitMessage, submitPrompt } = useSubmitMessage();
+  const { submitMessage: originalSubmitMessage, submitPrompt } = useSubmitMessage();
+  
+  // Flow Architect AI selection state
+  const {
+    options: selectionOptions,
+    selectedOptions,
+    isVisible: showSelectionButtons,
+    updateSelectedOptions,
+    clearSelection,
+    hideSelection,
+  } = useFlowSelection(index);
+  
+  // Enhanced submit message that includes selected options
+  const submitMessage = useCallback((data: { text: string }) => {
+    console.log("submitMessage called with data:", data);
+    console.log("selectedOptions:", selectedOptions);
+    
+    let messageText = data.text;
+    
+    // If there are selected options, prepend them to the message
+    if (selectedOptions.length > 0) {
+      const selectedText = selectedOptions.join(', ');
+      if (messageText.trim()) {
+        messageText = `Selected: ${selectedText}\n\n${messageText}`;
+      } else {
+        messageText = `Selected: ${selectedText}`;
+      }
+    }
+    
+    // Clear selection after sending
+    clearSelection();
+    
+    // Call the original submit function with the enhanced message
+    originalSubmitMessage({ text: messageText });
+  }, [originalSubmitMessage, selectedOptions, clearSelection]);
 
   const handleKeyUp = useHandleKeyUp({
     index,
@@ -153,7 +189,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   useQueryParams({ textAreaRef });
 
   const { ref, ...registerProps } = methods.register('text', {
-    required: true,
+    required: selectedOptions.length === 0, // Only require text if no options are selected
     onChange: useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) =>
         methods.setValue('text', e.target.value, { shouldValidate: true }),
@@ -204,7 +240,9 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
 
   return (
     <form
-      onSubmit={methods.handleSubmit(submitMessage)}
+      onSubmit={(e) => {
+        return methods.handleSubmit(submitMessage)(e);
+      }}
       className={cn(
         'mx-auto flex w-full flex-row gap-3 transition-[max-width] duration-300 sm:px-2',
         maximizeChatSpace ? 'max-w-full' : 'md:max-w-3xl xl:max-w-4xl',
@@ -254,6 +292,14 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               setBadges={setBadges}
             />
             <FileFormChat conversation={conversation} />
+            {showSelectionButtons && (
+              <SelectionButtons
+                options={selectionOptions}
+                selectedOptions={selectedOptions}
+                onSelectionChange={updateSelectedOptions}
+                disabled={disableInputs || isNotAppendable}
+              />
+            )}
             {endpoint && (
               <div className={cn('flex', isRTL ? 'flex-row-reverse' : 'flex-row')}>
                 <TextareaAutosize
@@ -331,6 +377,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                       ref={submitButtonRef}
                       control={methods.control}
                       disabled={filesLoading || isSubmitting || disableInputs || isNotAppendable}
+                      hasSelectedOptions={selectedOptions.length > 0}
                     />
                   )
                 )}

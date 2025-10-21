@@ -55,7 +55,14 @@ export default function SearchMessage({ message }: Pick<TMessageProps, 'message'
         ? (user?.name ?? '') || (user?.username ?? '')
         : localize('com_user_message');
     }
-    return message?.sender ?? '';
+    
+    // Format sender name for Flow Architect AI
+    const sender = message?.sender ?? '';
+    if (sender && (sender.includes('GPT') || sender.includes('Claude') || sender.includes('Gemini') || sender.includes('Assistant'))) {
+      return `Flow Architect (${sender})`;
+    }
+    
+    return sender;
   }, [
     message?.isCreatedByUser,
     message?.sender,
