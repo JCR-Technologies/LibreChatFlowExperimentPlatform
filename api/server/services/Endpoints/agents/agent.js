@@ -50,6 +50,7 @@ const initializeAgent = async ({
   isInitialAgent = false,
 }) => {
   const appConfig = req.config;
+  
   if (
     isAgentsEndpoint(endpointOption?.endpoint) &&
     allowedProviders.size > 0 &&

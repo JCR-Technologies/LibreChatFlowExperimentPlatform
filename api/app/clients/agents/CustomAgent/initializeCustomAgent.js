@@ -8,6 +8,7 @@ const {
   SystemMessagePromptTemplate,
   HumanMessagePromptTemplate,
 } = require('@langchain/core/prompts');
+const { FLOW_EXPERIMENT_AGENT_PROMPT } = require('./flowExperimentAgent');
 
 const initializeCustomAgent = async ({
   tools,
@@ -22,9 +23,9 @@ const initializeCustomAgent = async ({
   if (customName) {
     prompt = `You are "${customName}".\n${prompt}`;
   }
-  if (customInstructions) {
-    prompt = `${prompt}\n${customInstructions}`;
-  }
+  // if (customInstructions) {
+    prompt = `${FLOW_EXPERIMENT_AGENT_PROMPT}\n${prompt}\n${customInstructions}`;
+  // }
 
   const chatPrompt = ChatPromptTemplate.fromMessages([
     new SystemMessagePromptTemplate(prompt),
