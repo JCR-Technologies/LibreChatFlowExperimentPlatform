@@ -32,7 +32,7 @@ const SelectionButtons: React.FC<SelectionButtonsProps> = ({
   }
 
   return (
-    <div className="mb-3 flex flex-wrap gap-2">
+    <div className="mb-3 flex flex-wrap gap-2" style={{ padding: '1.25rem' }}>
       {options.map((option, index) => {
         const isSelected = selectedOptions.includes(option);
         return (

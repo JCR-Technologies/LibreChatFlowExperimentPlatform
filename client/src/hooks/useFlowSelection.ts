@@ -157,7 +157,20 @@ export const useFlowSelection = (index: number) => {
                             content.includes('Relaxation') ||
                             content.includes('Social / multiplayer');
       
-      if (hasFlowKeywords) {
+      const hasSummaryKeywords = content.includes('summary') ||
+                                content.includes('summarize') ||
+                                content.includes('summarize the') ||
+                                content.includes('summarize the designed') ||
+                                content.includes('summarize the experiment') ||
+                                content.includes('summarize the design') ||
+                                content.includes('summarize the flow experiment');
+
+      if (hasSummaryKeywords) {
+        setSelectionState(prev => ({ ...prev, isVisible: true, options: ["We're ready, let's create the experiment", "Continue designing the experiment"], selectedOptions: [] }));
+        return;
+      }
+
+      if (hasFlowKeywords && !hasSummaryKeywords) {
         const options = parseFlowOptions(content);
         if (options.length > 0) {
           setSelectionState(prev => ({

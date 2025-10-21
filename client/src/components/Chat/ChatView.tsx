@@ -14,6 +14,7 @@ import MessagesView from './Messages/MessagesView';
 import Presentation from './Presentation';
 import ChatForm from './Input/ChatForm';
 import Landing from './Landing';
+import FlowArchitectLanding from './FlowArchitectLanding';
 import Header from './Header';
 import Footer from './Footer';
 import { cn } from '~/utils';
@@ -71,7 +72,7 @@ function ChatView({ index = 0 }: { index?: number }) {
   } else if (!isLandingPage) {
     content = <MessagesView messagesTree={messagesTree} />;
   } else {
-    content = <Landing centerFormOnLanding={centerFormOnLanding} />;
+    content = <FlowArchitectLanding />;
   }
 
   return (
