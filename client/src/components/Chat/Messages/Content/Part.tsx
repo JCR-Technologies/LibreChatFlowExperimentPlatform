@@ -16,6 +16,27 @@ import WebSearch from './WebSearch';
 import ToolCall from './ToolCall';
 import ImageGen from './ImageGen';
 import Image from './Image';
+import FlowMessage from './FlowMessage';
+
+// Helper function to check if content is a valid Flow JSON message
+const isFlowMessage = (content: string): boolean => {
+  try {
+    const parsed = JSON.parse(content);
+    return parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options) && parsed.options.length > 0;
+  } catch (error) {
+    // If direct JSON parsing fails, try to find JSON within the content
+    const jsonMatch = content.match(/\{[\s\S]*"message"[\s\S]*"options"[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options) && parsed.options.length > 0;
+      } catch (jsonError) {
+        return false;
+      }
+    }
+    return false;
+  }
+};
 
 type PartProps = {
   part?: TMessageContentParts;
@@ -65,6 +86,16 @@ const Part = memo(
       if (part.tool_call_ids != null && !text) {
         return null;
       }
+      
+      // Check if this is a Flow Architect AI JSON message
+      if (isFlowMessage(text)) {
+        return (
+          <Container>
+            <FlowMessage content={text} isCreatedByUser={isCreatedByUser} />
+          </Container>
+        );
+      }
+      
       return (
         <Container>
           <Text text={text} isCreatedByUser={isCreatedByUser} showCursor={showCursor} />

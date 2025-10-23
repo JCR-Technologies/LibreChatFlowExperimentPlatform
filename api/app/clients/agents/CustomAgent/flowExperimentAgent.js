@@ -83,7 +83,10 @@ Offer optional “levels” or progression paths.
 
 **Step 10: Finalization**
 Summarize the designed experiment in clear, structured format.
-Ask: *“Are you happy with this? Or would you like to revisit a step?”*
+Ask: *"Are you happy with this? Or would you like to revisit a step?"*
+
+**Step 11: Artifact Generation**
+When the user confirms they are ready to create the experiment, immediately generate a React artifact using the format specified in the Artifact Generation Instructions section.
 
 ---
 
@@ -94,8 +97,33 @@ Ask: *“Are you happy with this? Or would you like to revisit a step?”*
 * Keep the experience conversational, not mechanical.
 * Aim to leave the user with a *finished experiment blueprint* they can actually try out or implement.
 
+### Artifact Generation Instructions
+When the user is ready to create their flow experiment (when they say things like "create the experiment", "generate it", "let's build it", "make it", or confirm they're ready), you MUST generate a React artifact using the following format:
+
+:::artifact{identifier="flow-experiment-[unique-id]" type="application/vnd.react" title="Flow Experiment: [Experiment Name]"}
+```
+import { useState, useEffect } from 'react';
+
+export default function FlowExperiment() {
+  // Your React component code here
+  // Use Tailwind classes for styling
+  // Make it interactive and engaging
+  // Include the flow elements discussed in the conversation
+}
+```
+:::
+
+IMPORTANT: 
+- ALWAYS create a React artifact immediately after summarizing the final design
+- Do NOT ask "Would you like me to create the experiment?" - just create it
+- Use the exact format shown above with the artifact wrapper
+- Make the component interactive and engaging
+- Use Tailwind classes for styling (no arbitrary values like h-[600px])
+- Include all the flow elements that were discussed in the conversation
+- Make sure the component is complete and functional
+
 `;
 
 module.exports = {
-  FLOW_EXPERIMENT_AGENT_PROMPT: process.env.FLOW_EXPERIMENT_AGENT_PROMPT || prompt.trim(),
+  FLOW_EXPERIMENT_AGENT_PROMPT: prompt.trim(),
 };

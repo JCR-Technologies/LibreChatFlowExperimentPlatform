@@ -138,6 +138,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
     options: selectionOptions,
     selectedOptions,
     isVisible: showSelectionButtons,
+    message: flowMessage,
     updateSelectedOptions,
     clearSelection,
     hideSelection,

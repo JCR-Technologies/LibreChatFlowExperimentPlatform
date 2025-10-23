@@ -7,6 +7,7 @@ interface FlowSelectionState {
   options: string[];
   selectedOptions: string[];
   isVisible: boolean;
+  message: string;
 }
 
 export const useFlowSelection = (index: number) => {
@@ -14,6 +15,7 @@ export const useFlowSelection = (index: number) => {
     options: [],
     selectedOptions: [],
     isVisible: false,
+    message: '',
   });
 
   const { conversation } = useChatContext();
@@ -23,66 +25,36 @@ export const useFlowSelection = (index: number) => {
     enabled: !!conversation?.conversationId,
   });
 
-  // Parse the last AI message to extract multiple choice options
-  const parseFlowOptions = useCallback((message: string): string[] => {
-    const options: string[] = [];
-    
-    // Look for bullet points or numbered lists that might be options
-    const lines = message.split('\n');
-    
-    for (const line of lines) {
-      const trimmed = line.trim();
-      
-      // Match patterns like:
-      // * Option text
-      // - Option text
-      // 1. Option text
-      // • Option text
-      // Also match lines that start with common option patterns
-      if (trimmed.match(/^[\*\-\•]\s+(.+)$/) || 
-          trimmed.match(/^\d+\.\s+(.+)$/) ||
-          trimmed.match(/^[A-Za-z]\s*\)\s+(.+)$/) ||
-          trimmed.match(/^[A-Za-z]\.\s+(.+)$/)) {
-        const option = trimmed.replace(/^[\*\-\•\d\.A-Za-z\)]\s*/, '').trim();
-        if (option && option.length > 0 && option.length < 100) { // Reasonable length check
-          options.push(option);
-        }
+  // Parse JSON format from Flow Architect AI messages
+  const parseFlowJSON = useCallback((message: string): { message: string; options: string[] } | null => {
+    try {
+      // Try to parse the entire message as JSON
+      const parsed = JSON.parse(message);
+      if (parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options)) {
+        return {
+          message: parsed.message,
+          options: parsed.options.filter((opt: any) => typeof opt === 'string')
+        };
       }
-    }
-    
-    // Also look for options in a more general way - lines that look like choices
-    if (options.length === 0) {
-      for (const line of lines) {
-        const trimmed = line.trim();
-        // Look for lines that are short and might be options
-        if (trimmed.length > 3 && trimmed.length < 80 && 
-            !trimmed.includes('?') && 
-            !trimmed.includes(':') &&
-            !trimmed.startsWith('**') &&
-            !trimmed.startsWith('###') &&
-            !trimmed.startsWith('Your goals:') &&
-            !trimmed.startsWith('Expect user') &&
-            !trimmed.startsWith('---') &&
-            !trimmed.startsWith('###') &&
-            !trimmed.startsWith('**Step') &&
-            !trimmed.startsWith('Ask:') &&
-            !trimmed.startsWith('Options:') &&
-            !trimmed.startsWith('Generate a prototype') &&
-            !trimmed.startsWith('Summarize the designed') &&
-            !trimmed.startsWith('Always remind') &&
-            !trimmed.startsWith('If the user') &&
-            !trimmed.startsWith('Keep the experience') &&
-            !trimmed.startsWith('Aim to leave')) {
-          // Check if it's not a question or instruction
-          if (!trimmed.endsWith('?') && !trimmed.includes('Ask:') && !trimmed.includes('Options:')) {
-            options.push(trimmed);
+    } catch (error) {
+      // If direct JSON parsing fails, try to find JSON within the message
+      const jsonMatch = message.match(/\{[\s\S]*"message"[\s\S]*"options"[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options)) {
+            return {
+              message: parsed.message,
+              options: parsed.options.filter((opt: any) => typeof opt === 'string')
+            };
           }
+        } catch (jsonError) {
+          console.log("Failed to parse JSON within message:", jsonError);
         }
       }
     }
     
-    console.log("Parsed options:", options);
-    return options.slice(0, 8); // Limit to 8 options max
+    return null;
   }, []);
 
   // Check if the last message is from Flow Architect AI and contains options
@@ -92,7 +64,7 @@ export const useFlowSelection = (index: number) => {
     
     if (!messagesTree || messagesTree.length === 0) {
       console.log("No messages found in messagesTree");
-      setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [] }));
+      setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [], message: '' }));
       return;
     }
 
@@ -102,7 +74,7 @@ export const useFlowSelection = (index: number) => {
     console.log("Last message sender:", lastMessage?.sender);
     console.log("Last message content:", lastMessage?.content);
     
-    // Check if it's from the assistant (or a model name) and contains the Flow Architect AI prompt
+    // Check if it's from the assistant (or a model name)
     const isAssistantMessage = lastMessage?.sender === 'assistant' || 
                               (lastMessage?.sender && typeof lastMessage.sender === 'string' && 
                                lastMessage.sender !== 'user' && lastMessage.sender !== 'User');
@@ -128,65 +100,24 @@ export const useFlowSelection = (index: number) => {
       
       console.log("Extracted content:", content);
       
-      // Check if this looks like a Flow Architect AI response with options
-      const hasFlowKeywords = content.includes('What\'s the purpose') || 
-                            content.includes('Which senses') || 
-                            content.includes('What form should') ||
-                            content.includes('Which creative') ||
-                            content.includes('Which type') ||
-                            content.includes('Which') ||
-                            content.includes('which') ||
-                            content.includes('pick') ||
-                            content.includes('choose') ||
-                            content.includes('select') ||
-
-                            content.includes('What\'s your current level') ||
-                            content.includes('How should the difficulty') ||
-                            content.includes('flow experiment') ||
-                            content.includes('multiple-choice') ||
-                            content.includes('choose from') ||
-                            content.includes('select from') ||
-                            content.includes('Brain Game') ||
-                            content.includes('Create something') ||
-                            content.includes('Make music') ||
-                            content.includes('Increase awareness') ||
-                            content.includes('Get into a trance') ||
-                            content.includes('Explore creativity') ||
-                            content.includes('Practice a skill') ||
-                            content.includes('Learn new knowledge') ||
-                            content.includes('Relaxation') ||
-                            content.includes('Social / multiplayer');
-      
-      const hasSummaryKeywords = content.includes('summary') ||
-                                content.includes('summarize') ||
-                                content.includes('summarize the') ||
-                                content.includes('summarize the designed') ||
-                                content.includes('summarize the experiment') ||
-                                content.includes('summarize the design') ||
-                                content.includes('summarize the flow experiment');
-
-      if (hasSummaryKeywords) {
-        setSelectionState(prev => ({ ...prev, isVisible: true, options: ["We're ready, let's create the experiment", "Continue designing the experiment"], selectedOptions: [] }));
+      // Try to parse as JSON format
+      const flowData = parseFlowJSON(content);
+      if (flowData && flowData.options.length > 0) {
+        console.log("Parsed Flow JSON:", flowData);
+        setSelectionState(prev => ({
+          ...prev,
+          message: flowData.message,
+          options: flowData.options,
+          isVisible: true,
+          selectedOptions: [], // Clear previous selections
+        }));
         return;
-      }
-
-      if (hasFlowKeywords && !hasSummaryKeywords) {
-        const options = parseFlowOptions(content);
-        if (options.length > 0) {
-          setSelectionState(prev => ({
-            ...prev,
-            options,
-            isVisible: true,
-            selectedOptions: [], // Clear previous selections
-          }));
-          return;
-        }
       }
     }
     
     // If no options found, hide the selection buttons
-    setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [] }));
-  }, [messagesTree, parseFlowOptions]);
+    setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [], message: '' }));
+  }, [messagesTree, parseFlowJSON]);
 
   // Update options when conversation changes
   useEffect(() => {
@@ -202,7 +133,7 @@ export const useFlowSelection = (index: number) => {
   }, []);
 
   const hideSelection = useCallback(() => {
-    setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [] }));
+    setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [], message: '' }));
   }, []);
 
   return {
