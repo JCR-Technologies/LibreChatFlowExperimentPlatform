@@ -29,16 +29,14 @@ export default function StartupLayout({ isAuthenticated }: { isAuthenticated?: b
   const location = useLocation();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/c/new', { replace: true });
-    }
+    // Remove automatic redirect to chat - let users see the landing page first
     if (data) {
       setStartupConfig(data);
     }
-  }, [isAuthenticated, navigate, data]);
+  }, [data]);
 
   useEffect(() => {
-    document.title = startupConfig?.appTitle || 'LibreChat';
+    document.title = startupConfig?.appTitle || 'Flow Research Platform';
   }, [startupConfig?.appTitle]);
 
   useEffect(() => {
