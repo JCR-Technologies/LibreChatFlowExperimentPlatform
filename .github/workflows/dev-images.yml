@@ -59,6 +59,7 @@ jobs:
       - name: Prepare environment
         run: |
           cp .env.example .env
+          cp librechat.example.yaml librechat.yaml
 
       # Build and push Docker images for each target
       - name: Build and push Docker images
