@@ -81,14 +81,14 @@ export default function InstructionModal({ open, onOpenChange, artifact, onStart
                   </div>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                {/* <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 dark:text-white mb-2">
                     Pre-Experiment Questionnaire
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Before starting, you'll be asked a few questions about your current state and expectations. This helps us understand your baseline experience.
                   </p>
-                </div>
+                </div> */}
 
                 <div className="flex items-start space-x-3">
                   <input
@@ -145,17 +145,15 @@ export default function InstructionModal({ open, onOpenChange, artifact, onStart
         }
         buttons={
           <div className="flex items-center justify-between w-full">
-            <div>
-              {currentPage === 2 && (
-                <Button 
-                  onClick={handleBack} 
-                  variant="outline"
-                >
-                  Back
-                </Button>
-              )}
-            </div>
             <div className="flex items-center space-x-3">
+                {currentPage === 2 && (
+                    <Button 
+                    onClick={handleBack} 
+                    variant="outline"
+                    >
+                    Back
+                    </Button>
+                )}
               <Button 
                 onClick={handleClose} 
                 variant="outline"
