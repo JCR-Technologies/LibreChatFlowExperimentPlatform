@@ -528,3 +528,40 @@ export const useUserTermsQuery = (
     ...config,
   });
 };
+
+/**
+ * ARTIFACT QUERIES
+ */
+
+export const useGetArtifactsQuery = (
+  params?: t.ArtifactsListParams,
+  config?: UseQueryOptions<t.ArtifactsListResponse>,
+): QueryObserverResult<t.ArtifactsListResponse> => {
+  return useQuery<t.ArtifactsListResponse>(
+    [QueryKeys.artifacts, params],
+    () => dataService.getArtifacts(params),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
+};
+
+export const useGetArtifactByIdQuery = (
+  artifactId: string,
+  config?: UseQueryOptions<t.TArtifact>,
+): QueryObserverResult<t.TArtifact> => {
+  return useQuery<t.TArtifact>(
+    [QueryKeys.artifact, artifactId],
+    () => dataService.getArtifactById(artifactId),
+    {
+      enabled: !!artifactId,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
+};

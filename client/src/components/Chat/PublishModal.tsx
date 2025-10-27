@@ -4,8 +4,8 @@ import { usePublishArtifactMutation } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 import { useGetMessagesByConvoId } from '~/data-provider';
 import type { TConversation } from 'librechat-data-provider';
-import ExperimentConfigForm from './ExperimentConfigForm';
-import CreationQuestionnaire from './CreationQuestionnaire';
+import ExperimentConfigForm from '~/components/Chat/ExperimentConfigForm';
+import CreationQuestionnaire from '~/components/Chat/CreationQuestionnaire';
 
 interface PublishModalProps {
   open: boolean;

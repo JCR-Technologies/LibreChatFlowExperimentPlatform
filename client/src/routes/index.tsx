@@ -20,6 +20,7 @@ import ChatRoute from './ChatRoute';
 import Search from './Search';
 import Root from './Root';
 import LandingPage from '~/components/Public/LandingPage';
+import ArtifactView from '~/components/Public/ArtifactView';
 
 const AuthLayout = () => (
   <AuthContextProvider>
@@ -55,6 +56,11 @@ export const router = createBrowserRouter(
     {
       path: '/',
       element: <LandingPage />,
+      errorElement: <RouteErrorBoundary />,
+    },
+    {
+      path: 'artifacts/:artifactId',
+      element: <ArtifactView />,
       errorElement: <RouteErrorBoundary />,
     },
     {
