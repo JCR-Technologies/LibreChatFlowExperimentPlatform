@@ -504,3 +504,88 @@ export const useMCPServerConnectionStatusQuery = (
     },
   );
 };
+
+
+export const useGetArtifactsQuery = (
+  params?: q.ArtifactsListParams,
+  config?: UseQueryOptions<q.ArtifactsListResponse>,
+): QueryObserverResult<q.ArtifactsListResponse> => {
+  return useQuery<q.ArtifactsListResponse>(
+    [QueryKeys.artifacts, params],
+    () => dataService.getArtifacts(params),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
+};
+
+export const useGetArtifactByIdQuery = (
+  artifactId: string,
+  config?: UseQueryOptions<t.TArtifact>,
+): QueryObserverResult<t.TArtifact> => {
+  return useQuery<t.TArtifact>(
+    [QueryKeys.artifact, artifactId],
+    () => dataService.getArtifactById(artifactId),
+    {
+      enabled: !!artifactId,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      ...config,
+    },
+  );
+};
+
+export const usePublishArtifactMutation = (
+  options?: m.PublishArtifactOptions,
+): UseMutationResult<t.TArtifact, unknown, t.TPublishArtifactRequest> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    (payload: t.TPublishArtifactRequest) => dataService.publishArtifact(payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.artifacts]);
+      },
+      ...options,
+    },
+  );
+};
+
+export const useCreateArtifactSessionMutation = (
+  options?: m.CreateArtifactSessionOptions,
+): UseMutationResult<t.TArtifactSession, unknown, t.TCreateArtifactSessionRequest> => {
+  return useMutation(
+    (payload: t.TCreateArtifactSessionRequest) => dataService.createArtifactSession(payload),
+    options,
+  );
+};
+
+export const useUpdateArtifactSessionMutation = (
+  options?: m.UpdateArtifactSessionOptions,
+): UseMutationResult<t.TArtifactSession, unknown, { sessionId: string; data: t.TUpdateArtifactSessionRequest }> => {
+  return useMutation(
+    ({ sessionId, data }: { sessionId: string; data: t.TUpdateArtifactSessionRequest }) => 
+      dataService.updateArtifactSession(sessionId, data),
+    options,
+  );
+};
+
+export const useUpdateArtifactStatsMutation = (
+  options?: m.UpdateArtifactStatsOptions,
+): UseMutationResult<{ success: boolean }, unknown, { artifactId: string; action: 'play' | 'like' }> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ artifactId, action }: { artifactId: string; action: 'play' | 'like' }) => 
+      dataService.updateArtifactStats(artifactId, action),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([QueryKeys.artifacts]);
+        queryClient.invalidateQueries([QueryKeys.artifact]);
+      },
+      ...options,
+    },
+  );
+};

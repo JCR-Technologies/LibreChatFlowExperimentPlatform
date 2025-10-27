@@ -653,3 +653,74 @@ export type TBalanceResponse = {
   lastRefill?: Date;
   refillAmount?: number;
 };
+
+
+
+// Artifact Types
+export type TArtifact = {
+  artifactId: string;
+  title: string;
+  description: string;
+  instructions: string;
+  artifactCode: string;
+  conversationId: string;
+  author: string;
+  category: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  duration: string;
+  thumbnail: string;
+  likes: number;
+  plays: number;
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TArtifactSession = {
+  sessionId: string;
+  artifactId: string;
+  userId?: string;
+  startTime: string;
+  endTime?: string;
+  duration?: number; // in seconds
+  completed: boolean;
+  questionnaireResponses?: any;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TPublishArtifactRequest = {
+  title: string;
+  description: string;
+  instructions: string;
+  artifactCode: string;
+  conversationId: string;
+  category: string;
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  duration?: string;
+  thumbnail?: string;
+};
+
+export type TCreateArtifactSessionRequest = {
+  artifactId: string;
+  userId?: string;
+  startTime: string;
+};
+
+export type TUpdateArtifactSessionRequest = {
+  endTime?: string;
+  duration?: number;
+  completed?: boolean;
+  questionnaireResponses?: any;
+};
+
+export type TArtifactAnalytics = {
+  totalSessions: number;
+  completedSessions: number;
+  averageDuration: number;
+  completionRate: number;
+};
+
+export type TArtifactStatsUpdate = {
+  action: 'play' | 'like';
+};

@@ -1,103 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ArrowRight, Users, Calendar, Heart, Play, Filter } from 'lucide-react';
+import { useGetArtifactsQuery } from 'librechat-data-provider/react-query';
+import type { TArtifact } from 'librechat-data-provider';
 
-// Mock data for flow experiments - in a real app, this would come from an API
-const mockFlowExperiments = [
-  {
-    id: '1',
-    title: 'Zen Garden Meditation',
-    description: 'A peaceful digital garden where you arrange stones and rake patterns to find inner calm.',
-    category: 'Meditation',
-    duration: '5-15 min',
-    difficulty: 'Beginner',
-    thumbnail: '🌱',
-    author: 'FlowMaster',
-    likes: 1247,
-    plays: 8932,
-  },
-  {
-    id: '2',
-    title: 'Rhythm Flow',
-    description: 'Create mesmerizing beats and melodies through intuitive touch interactions.',
-    category: 'Music',
-    duration: '10-20 min',
-    difficulty: 'Intermediate',
-    thumbnail: '🎵',
-    author: 'BeatCreator',
-    likes: 2156,
-    plays: 12450,
-  },
-  {
-    id: '3',
-    title: 'Color Harmony',
-    description: 'Paint with flowing colors that respond to your emotions and create beautiful patterns.',
-    category: 'Visual',
-    duration: '8-12 min',
-    difficulty: 'Beginner',
-    thumbnail: '🎨',
-    author: 'ColorArtist',
-    likes: 1890,
-    plays: 15678,
-  },
-  {
-    id: '4',
-    title: 'Word Flow',
-    description: 'Write poetry and stories in a flowing, distraction-free environment with AI assistance.',
-    category: 'Writing',
-    duration: '15-30 min',
-    difficulty: 'Intermediate',
-    thumbnail: '✍️',
-    author: 'WordSmith',
-    likes: 987,
-    plays: 5432,
-  },
-  {
-    id: '5',
-    title: 'Puzzle Flow',
-    description: 'Solve elegant puzzles that adapt to your skill level and create satisfying patterns.',
-    category: 'Games',
-    duration: '12-25 min',
-    difficulty: 'Advanced',
-    thumbnail: '🧩',
-    author: 'PuzzleMaster',
-    likes: 3421,
-    plays: 18765,
-  },
-  {
-    id: '6',
-    title: 'Breathing Space',
-    description: 'Guided breathing exercises with beautiful visualizations to reduce stress and anxiety.',
-    category: 'Wellness',
-    duration: '5-10 min',
-    difficulty: 'Beginner',
-    thumbnail: '🫁',
-    author: 'WellnessGuide',
-    likes: 2765,
-    plays: 22134,
-  },
-];
-
-const categories = ['All', 'Meditation', 'Music', 'Visual', 'Writing', 'Games', 'Wellness'];
-
-interface FlowExperiment {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  duration: string;
-  difficulty: string;
-  thumbnail: string;
-  author: string;
-  likes: number;
-  plays: number;
-}
+// Categories for filtering - dynamically generated from artifacts
+const defaultCategories = ['All'];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Fetch published artifacts
+  const { data: artifactsResponse, isLoading, error } = useGetArtifactsQuery({
+    limit: 50,
+    sort: 'createdAt',
+  });
+
+  // Ensure artifacts is always an array
+  const artifacts = Array.isArray(artifactsResponse) ? artifactsResponse : [];
+
+  // Generate categories from artifacts
+  const categories = [
+    'All',
+    ...Array.from(new Set(artifacts.map(artifact => artifact.category))).sort()
+  ];
 
   // Debounce search
   useEffect(() => {
@@ -113,13 +42,13 @@ export default function LandingPage() {
   };
 
   // Filter experiments based on search and category
-  const filteredExperiments = mockFlowExperiments.filter(experiment => {
+  const filteredExperiments = artifacts.filter(artifact => {
     const matchesSearch = !debouncedSearch || 
-      experiment.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      experiment.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      experiment.author.toLowerCase().includes(debouncedSearch.toLowerCase());
+      artifact.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      artifact.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      artifact.author.toLowerCase().includes(debouncedSearch.toLowerCase());
     
-    const matchesCategory = selectedCategory === 'All' || experiment.category === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || artifact.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
@@ -186,7 +115,18 @@ export default function LandingPage() {
 
         {/* Experiments Grid */}
         <div className="max-w-7xl mx-auto">
-          {filteredExperiments.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="text-gray-600 dark:text-gray-300 mt-4">Loading experiments...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-600 dark:text-red-400">
+                Failed to load experiments. Please try again later.
+              </p>
+            </div>
+          ) : filteredExperiments.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 dark:text-gray-300">
                 {debouncedSearch || selectedCategory !== 'All' 
@@ -196,8 +136,8 @@ export default function LandingPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredExperiments.map((experiment: FlowExperiment) => (
-                <ExperimentCard key={experiment.id} experiment={experiment} />
+              {filteredExperiments.map((artifact: TArtifact) => (
+                <ExperimentCard key={artifact.artifactId} experiment={artifact} />
               ))}
             </div>
           )}
@@ -207,7 +147,7 @@ export default function LandingPage() {
   );
 }
 
-function ExperimentCard({ experiment }: { experiment: FlowExperiment }) {
+function ExperimentCard({ experiment }: { experiment: TArtifact }) {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Beginner': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
@@ -217,14 +157,21 @@ function ExperimentCard({ experiment }: { experiment: FlowExperiment }) {
     }
   };
 
+  const handleTryExperiment = () => {
+    // Navigate to the artifact view page
+    window.open(`/artifacts/${experiment.artifactId}`, '_blank');
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-200 overflow-hidden">
       <div className="p-6">
         <div className="flex items-start justify-between mb-3">
-          <div className="text-4xl mb-2">{experiment.thumbnail}</div>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(experiment.difficulty)}`}>
-            {experiment.difficulty}
-          </span>
+          <div className="text-4xl mb-2">{experiment.thumbnail || '🎯'}</div>
+          {experiment.difficulty && (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(experiment.difficulty)}`}>
+              {experiment.difficulty}
+            </span>
+          )}
         </div>
         
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
@@ -236,10 +183,12 @@ function ExperimentCard({ experiment }: { experiment: FlowExperiment }) {
         </p>
         
         <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <div className="flex items-center">
-            <Calendar className="w-4 h-4 mr-2" />
-            {experiment.duration}
-          </div>
+          {experiment.duration && (
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2" />
+              {experiment.duration}
+            </div>
+          )}
           
           <div className="flex items-center">
             <Users className="w-4 h-4 mr-2" />
@@ -259,7 +208,10 @@ function ExperimentCard({ experiment }: { experiment: FlowExperiment }) {
         </div>
         
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+          <button 
+            onClick={handleTryExperiment}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+          >
             Try Experiment
           </button>
         </div>

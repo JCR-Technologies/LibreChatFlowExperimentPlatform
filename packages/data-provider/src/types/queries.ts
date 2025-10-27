@@ -187,3 +187,23 @@ export type GraphTokenResponse = {
   expires_in: number;
   scope: string;
 };
+
+
+export type ArtifactsListParams = {
+  category?: string;
+  limit?: number;
+  skip?: number;
+  sort?: 'createdAt' | 'likes' | 'plays';
+};
+
+export type ArtifactsListResponse = t.TArtifact[];
+
+export type ArtifactSessionsParams = {
+  artifactId: string;
+  limit?: number;
+  skip?: number;
+};
+
+export type ArtifactSessionsResponse = t.TArtifactSession[];
+
+export type ArtifactAnalyticsResponse = t.TArtifactAnalytics;

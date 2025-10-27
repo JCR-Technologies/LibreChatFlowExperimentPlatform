@@ -22,6 +22,17 @@ const {
 } = require('./Message');
 const { getConvoTitle, getConvo, saveConvo, deleteConvos } = require('./Conversation');
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
+const {
+  publishArtifact,
+  getArtifacts,
+  getArtifactById,
+  updateArtifactStats,
+  createArtifactSession,
+  updateArtifactSession,
+  getArtifactSessions,
+  getArtifactAnalytics,
+} = require('./Artifact');
+
 const { File } = require('~/db/models');
 
 const seedDatabase = async () => {
@@ -61,4 +72,13 @@ module.exports = {
   deletePresets,
 
   Files: File,
+
+  publishArtifact,
+  getArtifacts,
+  getArtifactById,
+  updateArtifactStats,
+  createArtifactSession,
+  updateArtifactSession,
+  getArtifactSessions,
+  getArtifactAnalytics,
 };

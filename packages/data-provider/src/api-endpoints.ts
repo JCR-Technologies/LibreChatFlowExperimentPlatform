@@ -377,3 +377,11 @@ export const getEffectivePermissions = (resourceType: ResourceType, resourceId: 
 // SharePoint Graph API Token
 export const graphToken = (scopes: string) =>
   `${BASE_URL}/api/auth/graph-token?scopes=${encodeURIComponent(scopes)}`;
+
+export const getArtifacts = (queryParams: string) => `/api/artifacts/public${queryParams ? `?${queryParams}` : ''}`;
+export const getArtifactById = (artifactId: string) => `/api/artifacts/public/${artifactId}`;
+export const publishArtifact = () => '/api/artifacts/publish';
+export const updateArtifactStats = (artifactId: string, action: string) => `/api/artifacts/public/${artifactId}/${action}`;
+export const createArtifactSession = (artifactId: string) => `/api/artifacts/${artifactId}/sessions`;
+export const updateArtifactSession = (sessionId: string) => `/api/artifacts/sessions/${sessionId}`;
+export const getArtifactAnalytics = (artifactId: string) => `/api/artifacts/${artifactId}/analytics`;

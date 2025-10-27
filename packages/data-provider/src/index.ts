@@ -42,7 +42,7 @@ export * from './utils';
 export * from './actions';
 export { default as createPayload } from './createPayload';
 // /* react query hooks */
-// export * from './react-query/react-query-service';
+export * from './react-query/react-query-service';
 /* feedback */
 export * from './feedback';
 export * from './parameterSettings';

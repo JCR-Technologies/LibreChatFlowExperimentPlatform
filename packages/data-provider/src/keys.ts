@@ -56,11 +56,23 @@ export enum QueryKeys {
   resourcePermissions = 'resourcePermissions',
   effectivePermissions = 'effectivePermissions',
   graphToken = 'graphToken',
+  /* Artifacts */
+  artifacts = 'artifacts',
+  artifact = 'artifact',
+  artifactSessions = 'artifactSessions',
+  artifactAnalytics = 'artifactAnalytics',
 }
 
 // Dynamic query keys that require parameters
 export const DynamicQueryKeys = {
   agentFiles: (agentId: string) => ['agentFiles', agentId] as const,
+  // Artifact dynamic keys
+  artifactById: (artifactId: string) => [QueryKeys.artifact, artifactId] as const,
+  artifactSessions: (artifactId: string) => [QueryKeys.artifactSessions, artifactId] as const,
+  artifactAnalytics: (artifactId: string) => [QueryKeys.artifactAnalytics, artifactId] as const,
+  artifactsByCategory: (category: string) => [QueryKeys.artifacts, 'category', category] as const,
+  artifactsByAuthor: (author: string) => [QueryKeys.artifacts, 'author', author] as const,
+
 } as const;
 
 export enum MutationKeys {
@@ -86,4 +98,10 @@ export enum MutationKeys {
   enableTwoFactor = 'enableTwoFactor',
   verifyTwoFactor = 'verifyTwoFactor',
   updateMemoryPreferences = 'updateMemoryPreferences',
+   /* Artifacts */
+   publishArtifact = 'publishArtifact',
+   createArtifactSession = 'createArtifactSession',
+   updateArtifactSession = 'updateArtifactSession',
+   updateArtifactStats = 'updateArtifactStats',
+ 
 }

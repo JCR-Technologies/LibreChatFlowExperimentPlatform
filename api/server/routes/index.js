@@ -1,5 +1,6 @@
 const accessPermissions = require('./accessPermissions');
 const assistants = require('./assistants');
+const artifacts = require('./artifacts');
 const categories = require('./categories');
 const tokenizer = require('./tokenizer');
 const endpoints = require('./endpoints');
@@ -55,6 +56,7 @@ module.exports = {
   endpoints,
   tokenizer,
   assistants,
+  artifacts,
   categories,
   staticRoute,
   accessPermissions,

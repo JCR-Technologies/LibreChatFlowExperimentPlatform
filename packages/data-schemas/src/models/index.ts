@@ -25,6 +25,8 @@ import { createMemoryModel } from './memory';
 import { createAccessRoleModel } from './accessRole';
 import { createAclEntryModel } from './aclEntry';
 import { createGroupModel } from './group';
+import { createArtifactModel } from './artifact';
+import { createArtifactSessionModel } from './artifactSession';
 
 /**
  * Creates all database models for all collections
@@ -58,5 +60,7 @@ export function createModels(mongoose: typeof import('mongoose')) {
     AccessRole: createAccessRoleModel(mongoose),
     AclEntry: createAclEntryModel(mongoose),
     Group: createGroupModel(mongoose),
+    Artifact: createArtifactModel(mongoose),
+    ArtifactSession: createArtifactSessionModel(mongoose),
   };
 }

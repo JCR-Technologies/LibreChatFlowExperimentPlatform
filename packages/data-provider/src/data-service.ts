@@ -956,3 +956,38 @@ export function getGraphApiToken(params: q.GraphTokenParams): Promise<q.GraphTok
 export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }
+
+
+export function getArtifacts(params?: q.ArtifactsListParams): Promise<q.ArtifactsListResponse> {
+  const queryParams = new URLSearchParams();
+  if (params?.category) queryParams.append('category', params.category);
+  if (params?.limit) queryParams.append('limit', params.limit.toString());
+  if (params?.skip) queryParams.append('skip', params.skip.toString());
+  if (params?.sort) queryParams.append('sort', params.sort);
+  
+  return request.get(endpoints.getArtifacts(queryParams.toString()));
+}
+
+export function getArtifactById(artifactId: string): Promise<t.TArtifact> {
+  return request.get(endpoints.getArtifactById(artifactId));
+}
+
+export function publishArtifact(payload: t.TPublishArtifactRequest): Promise<t.TArtifact> {
+  return request.post(endpoints.publishArtifact(), payload);
+}
+
+export function updateArtifactStats(artifactId: string, action: 'play' | 'like'): Promise<{ success: boolean }> {
+  return request.post(endpoints.updateArtifactStats(artifactId, action));
+}
+
+export function createArtifactSession(payload: t.TCreateArtifactSessionRequest): Promise<t.TArtifactSession> {
+  return request.post(endpoints.createArtifactSession(payload.artifactId), payload);
+}
+
+export function updateArtifactSession(sessionId: string, payload: t.TUpdateArtifactSessionRequest): Promise<t.TArtifactSession> {
+  return request.patch(endpoints.updateArtifactSession(sessionId), payload);
+}
+
+export function getArtifactAnalytics(artifactId: string): Promise<q.ArtifactAnalyticsResponse> {
+  return request.get(endpoints.getArtifactAnalytics(artifactId));
+}

@@ -389,3 +389,8 @@ export interface CancelMCPOAuthResponse {
   success: boolean;
   message: string;
 }
+
+export type PublishArtifactOptions = MutationOptions<types.TArtifact, types.TPublishArtifactRequest>;
+export type CreateArtifactSessionOptions = MutationOptions<types.TArtifactSession, types.TCreateArtifactSessionRequest>;
+export type UpdateArtifactSessionOptions = MutationOptions<types.TArtifactSession, { sessionId: string; data: types.TUpdateArtifactSessionRequest }>;
+export type UpdateArtifactStatsOptions = MutationOptions<{ success: boolean }, { artifactId: string; action: 'play' | 'like' }>;
