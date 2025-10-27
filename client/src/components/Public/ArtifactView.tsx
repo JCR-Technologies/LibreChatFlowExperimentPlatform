@@ -14,6 +14,7 @@ import { getKey, getProps, getTemplate, getArtifactFilename } from '~/utils/arti
 import { getMermaidFiles } from '~/utils/mermaid';
 import { sharedFiles, sharedOptions } from '~/utils/artifacts';
 import { removeNullishValues } from 'librechat-data-provider';
+import { parseStoredArtifact } from '~/utils/artifactParser';
 
 interface ExperimentState {
   phase: 'loading' | 'instructions' | 'running' | 'completed' | 'error';
@@ -39,10 +40,17 @@ export default function ArtifactView() {
   const updateStatsMutation = useUpdateArtifactStatsMutation();
 
   useEffect(() => {
-    if (artifact) {
+    console.log('useEffect triggered:', { 
+      hasArtifact: !!artifact, 
+      currentPhase: experimentState.phase,
+      artifactId: artifact?.artifactId 
+    });
+    
+    if (artifact && experimentState.phase === 'loading') {
+      console.log('Setting experiment state to instructions');
       setExperimentState({ phase: 'instructions' });
     }
-  }, [artifact]);
+  }, [artifact, experimentState.phase]);
 
   // Process artifact for Sandpack
   const { files, fileKey, template, sharedProps, isMermaid } = useMemo(() => {
@@ -50,15 +58,72 @@ export default function ArtifactView() {
       return { files: {}, fileKey: '', template: 'static', sharedProps: {}, isMermaid: false };
     }
 
-    // Extract artifact type and language from artifactCode
-    const artifactType = 'application/vnd.react'; // Default to React for now
-    const language = 'tsx';
+    // Parse artifact using the utility
+    const parsedArtifact = parseStoredArtifact(artifact.artifactCode);
+    
+    if (!parsedArtifact) {
+      // If no wrapper found, try to detect the content type from the code itself
+      const codeContent = artifact.artifactCode.trim();
+      
+      // Check if it's a React component
+      if (codeContent.includes('import {') || codeContent.includes('export default') || codeContent.includes('function ') || codeContent.includes('const ') || codeContent.includes('useState')) {
+        console.log('Detected React component, using react-ts template');
+        return {
+          files: { 'App.tsx': codeContent },
+          fileKey: 'App.tsx',
+          template: 'react-ts',
+          sharedProps: getProps('application/vnd.react'),
+          isMermaid: false,
+        };
+      }
+      
+      // Check if it's HTML
+      if (codeContent.includes('<html>') || codeContent.includes('<div>') || codeContent.includes('<body>')) {
+        console.log('Detected HTML content, using static template');
+        return {
+          files: { 'index.html': codeContent },
+          fileKey: 'index.html',
+          template: 'static',
+          sharedProps: getProps('text/html'),
+          isMermaid: false,
+        };
+      }
+      
+      // Default to React if it looks like JavaScript/TypeScript
+      console.log('Defaulting to React template for unknown content type');
+      return {
+        files: { 'App.tsx': codeContent },
+        fileKey: 'App.tsx',
+        template: 'react-ts',
+        sharedProps: getProps('application/vnd.react'),
+        isMermaid: false,
+      };
+    }
+
+    const { content: codeContent, type: artifactType } = parsedArtifact;
+    
+    // Determine language based on artifact type
+    let language = 'html';
+    switch (artifactType) {
+      case 'application/vnd.react':
+        language = 'tsx';
+        break;
+      case 'application/vnd.mermaid':
+        language = 'mermaid';
+        break;
+      case 'text/html':
+      case 'application/vnd.code-html':
+        language = 'html';
+        break;
+      default:
+        language = 'html';
+    }
     
     const isMermaid = getKey(artifactType, language).includes('mermaid');
     
     if (isMermaid) {
       return {
-        files: getMermaidFiles(artifact.artifactCode),
+        files: getMermaidFiles(codeContent),
         fileKey: 'App.tsx',
         template: 'react-ts',
         sharedProps: getProps(artifactType),
@@ -68,17 +133,56 @@ export default function ArtifactView() {
 
     const fileKey = getArtifactFilename(artifactType, language);
     const files = removeNullishValues({
-      [fileKey]: artifact.artifactCode,
+      [fileKey]: codeContent,
     });
     
-    return {
+    const result = {
       files,
       fileKey,
       template: getTemplate(artifactType, language),
       sharedProps: getProps(artifactType),
       isMermaid: false,
     };
+    
+    // Debug logging
+    console.log('Artifact processing:', {
+      hasArtifactCode: !!artifact.artifactCode,
+      artifactCodeLength: artifact.artifactCode?.length || 0,
+      hasArtifactWrapper: artifact.artifactCode?.includes(':::artifact'),
+      parsedArtifact: parsedArtifact ? 'found' : 'not found',
+      codeContent: parsedArtifact ? parsedArtifact.content.substring(0, 100) + '...' : artifact.artifactCode?.substring(0, 100) + '...',
+    });
+    
+    return result;
   }, [artifact?.artifactCode]);
+
+  // Configure Sandpack options similar to ArtifactPreview
+  const sandpackOptions = useMemo(() => {
+    // Only add bundler URL if it's configured in startupConfig
+    const _options: typeof sharedOptions = {
+      ...sharedOptions,
+    };
+    
+    // Add bundler URL only if it exists in startup config
+    if (startupConfig?.bundlerURL || startupConfig?.staticBundlerURL) {
+      _options.bundlerURL = template === 'static' 
+        ? startupConfig.staticBundlerURL 
+        : startupConfig.bundlerURL;
+    }
+    
+    // Debug logging
+    console.log('Sandpack configuration:', {
+      template,
+      bundlerURL: _options.bundlerURL,
+      startupConfig: {
+        bundlerURL: startupConfig?.bundlerURL,
+        staticBundlerURL: startupConfig?.staticBundlerURL,
+      },
+      usingDefaultBundler: !_options.bundlerURL,
+    });
+    
+    return _options;
+  }, [startupConfig, template]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -90,11 +194,12 @@ export default function ArtifactView() {
   };
 
   const handleStartExperiment = () => {
-    setShowInstructions(false);
+    console.log('Starting experiment, current phase:', experimentState.phase);
     setExperimentState({
       phase: 'running',
       startTime: new Date(),
     });
+    console.log('Experiment state set to running');
     
     // Increment play count
     updateStatsMutation.mutate({
@@ -242,7 +347,7 @@ export default function ArtifactView() {
           </div>
         )}
 
-        {experimentState.phase === 'running' && (
+        { experimentState.phase === 'running' && (
           <div className="max-w-6xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
               {/* Experiment Header */}
@@ -287,13 +392,10 @@ export default function ArtifactView() {
                 {Object.keys(files).length > 0 ? (
                   <SandpackProvider
                     files={{
-                      ...files,
                       ...sharedFiles,
-                    }}
-                    options={{
-                      ...sharedOptions,
-                      bundlerURL: template === 'static' ? startupConfig?.staticBundlerURL : startupConfig?.bundlerURL,
-                    }}
+                      ...files,
+                    } as any}
+                    options={sandpackOptions}
                     {...sharedProps}
                     template={template as any}
                   >

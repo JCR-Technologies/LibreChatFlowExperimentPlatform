@@ -19,6 +19,8 @@ export default function InstructionModal({ open, onOpenChange, artifact, onStart
       setCurrentPage(2);
     } else {
       onStart();
+      // Close the modal immediately when starting the experiment
+      onOpenChange(false);
     }
   };
 
@@ -34,8 +36,17 @@ export default function InstructionModal({ open, onOpenChange, artifact, onStart
     onOpenChange(false);
   };
 
+  // Reset modal state when it closes
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setCurrentPage(1);
+      setConsentGiven(false);
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <OGDialog open={open} onOpenChange={handleClose}>
+    <OGDialog open={open} onOpenChange={handleOpenChange}>
       <OGDialogTemplate
         title={currentPage === 1 ? 'Welcome to the Flow Experiment Platform' : 'Experiment Instructions'}
         className="max-w-2xl max-h-[90vh] overflow-y-auto"

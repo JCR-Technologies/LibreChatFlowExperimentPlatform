@@ -14,6 +14,7 @@ interface FormData {
 interface ExperimentConfigFormProps {
   formData: FormData;
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  isTitleFromArtifact?: boolean;
 }
 
 const CATEGORIES = [
@@ -55,7 +56,7 @@ const THUMBNAIL_OPTIONS = [
   { value: '💡', label: '💡 Idea' },
 ];
 
-export default function ExperimentConfigForm({ formData, setFormData }: ExperimentConfigFormProps) {
+export default function ExperimentConfigForm({ formData, setFormData, isTitleFromArtifact = false }: ExperimentConfigFormProps) {
   const localize = useLocalize();
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -77,6 +78,11 @@ export default function ExperimentConfigForm({ formData, setFormData }: Experime
             placeholder="Enter experiment title"
             className="w-full"
           />
+          {isTitleFromArtifact && (
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+              ✨ Title automatically extracted from artifact
+            </p>
+          )}
         </div>
 
         {/* Description */}
