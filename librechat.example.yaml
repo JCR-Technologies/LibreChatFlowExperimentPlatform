@@ -27,7 +27,7 @@ cache: true
 
 # Custom interface configuration
 interface:
-  customWelcome: 'Welcome to LibreChat! Enjoy your experience.'
+  customWelcome: 'Welcome to the Flow Research Platform!'
   # Enable/disable file search as a chatarea selection (default: true)
   # Note: This setting does not disable the Agents File Search Capability.
   # To disable the Agents Capability, see the Agents Endpoint configuration instead.
@@ -36,6 +36,10 @@ interface:
   privacyPolicy:
     externalUrl: 'https://librechat.ai/privacy-policy'
     openNewTab: true
+
+  # Enable OpenAI (built-in)
+  openAI:
+    fetch: true
 
   # Terms of service
   termsOfService:
@@ -83,12 +87,13 @@ interface:
   endpointsMenu: true
   modelSelect: true
   parameters: true
-  sidePanel: true
+  sidePanel: false
   presets: false
   prompts: true
   bookmarks: false
-  multiConvo: true
+  multiConvo: false
   agents: false
+  temporaryChat: false
   peoplePicker:
     users: true
     groups: true
