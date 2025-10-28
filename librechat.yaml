@@ -34,7 +34,7 @@ interface:
   fileSearch: true
   # Privacy policy settings
   privacyPolicy:
-    externalUrl: 'https://librechat.ai/privacy-policy'
+    externalUrl: 'https://flowresearch.ai/privacy-policy'
     openNewTab: true
 
   # Enable OpenAI (built-in)
@@ -43,20 +43,20 @@ interface:
 
   # Terms of service
   termsOfService:
-    externalUrl: 'https://librechat.ai/tos'
+    externalUrl: 'https://flowresearch.ai/tos'
     openNewTab: true
     modalAcceptance: true
-    modalTitle: 'Terms of Service for LibreChat'
+    modalTitle: 'Terms of Service for the Flow Research Platform'
     modalContent: |
-      # Terms and Conditions for LibreChat
+      # Terms and Conditions for the Flow Research Platform
 
-      *Effective Date: February 18, 2024*
+      *Effective Date: October 28, 2025*
 
-      Welcome to LibreChat, the informational website for the open-source AI chat platform, available at https://librechat.ai. These Terms of Service ("Terms") govern your use of our website and the services we offer. By accessing or using the Website, you agree to be bound by these Terms and our Privacy Policy, accessible at https://librechat.ai//privacy.
+      Welcome to the Flow Research Platform, the informational website for the Flow Research Platform, available at https://flowresearch.ai. These Terms of Service ("Terms") govern your use of our website and the services we offer. By accessing or using the Website, you agree to be bound by these Terms and our Privacy Policy, accessible at https://flowresearch.ai//privacy.
 
       ## 1. Ownership
 
-      Upon purchasing a package from LibreChat, you are granted the right to download and use the code for accessing an admin panel for LibreChat. While you own the downloaded code, you are expressly prohibited from reselling, redistributing, or otherwise transferring the code to third parties without explicit permission from LibreChat.
+      Upon purchasing a package from the Flow Research Platform, you are granted the right to download and use the code for accessing an admin panel for the Flow Research Platform. While you own the downloaded code, you are expressly prohibited from reselling, redistributing, or otherwise transferring the code to third parties without explicit permission from the Flow Research Platform.
 
       ## 2. User Data
 
@@ -80,7 +80,7 @@ interface:
 
       ## 7. Contact Information
 
-      If you have any questions about these Terms, please contact us at contact@librechat.ai.
+      If you have any questions about these Terms, please contact us at contact@flowresearch.ai.
 
       By using the Website, you acknowledge that you have read these Terms of Service and agree to be bound by them.
 
@@ -158,6 +158,7 @@ actions:
   allowedDomains:
     - 'swapi.dev'
     - 'librechat.ai'
+    - 'flowresearch.ai'
     - 'google.com'
 
 # Example MCP Servers Object Structure
