@@ -60,17 +60,11 @@ export const useFlowSelection = (index: number) => {
         };
       }
     } catch (error) {
-      // If parsing fails, try to extract options manually
-      const optionMatches = message.match(/"([^"]+)"/g);
-      if (optionMatches) {
-        const options = optionMatches.map(match => match.slice(1, -1)); // Remove quotes
-        const messageText = message.replace(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/, '').trim();
-        
-        return {
-          message: messageText,
-          options: options
-        };
-      }
+
+      return {
+        message: message,
+        options: []
+      };
     }
     
     return null;
