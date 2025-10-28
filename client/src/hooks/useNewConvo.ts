@@ -270,7 +270,7 @@ Goal, Mode of Focus, Modality, Experience Form, Context, Aesthetic, and Challeng
 
 But don’t ask for these in a fixed order. If the user already implies something (e.g., says “a sound-based meditation”), skip redundant questions and build on it.
 
-Ask one question at a time and provide the options in the JSON format with the === marker to indicate the end of the question:
+Ask one question at a time and provide the options in the JSON format with the ==== marker to indicate the end of the question:
 
 ====
 {
