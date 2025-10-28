@@ -16,26 +16,78 @@ import WebSearch from './WebSearch';
 import ToolCall from './ToolCall';
 import ImageGen from './ImageGen';
 import Image from './Image';
-import FlowMessage from './FlowMessage';
 
-// Helper function to check if content is a valid Flow JSON message
-const isFlowMessage = (content: string): boolean => {
+// Helper function to check if content contains Flow options (simplified format)
+const hasFlowOptions = (content: string): boolean => {
+  // Look for the pattern: text followed by options array
+  // Example: "Question text\n\n[\"Option 1\", \"Option 2\", \"Option 3\"]"
+  const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
+  return optionsMatch !== null;
+};
+
+// Helper function to check if content is starting to show options during streaming
+const isStartingFlowOptions = (content: string): boolean => {
+  // Check if the content contains the beginning of an options array
+  return content.includes('{') && content.includes('"');
+};
+
+// Helper function to extract options from simplified Flow format
+const extractFlowOptions = (content: string): string[] => {
   try {
-    const parsed = JSON.parse(content);
-    return parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options) && parsed.options.length > 0;
-  } catch (error) {
-    // If direct JSON parsing fails, try to find JSON within the content
-    const jsonMatch = content.match(/\{[\s\S]*"message"[\s\S]*"options"[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options) && parsed.options.length > 0;
-      } catch (jsonError) {
-        return false;
+    // Find the options array in the content
+    const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
+    if (optionsMatch) {
+      const optionsString = optionsMatch[0];
+      const parsed = JSON.parse(optionsString);
+      if (Array.isArray(parsed)) {
+        return parsed.filter(opt => typeof opt === 'string');
       }
     }
-    return false;
+  } catch (error) {
+    // If parsing fails, try to extract options manually
+    const optionMatches = content.match(/"([^"]+)"/g);
+    if (optionMatches) {
+      return optionMatches.map(match => match.slice(1, -1)); // Remove quotes
+    }
   }
+  
+  return [];
+};
+
+// Helper function to extract the full message text (without options array)
+const extractFlowMessageText = (content: string): string => {
+  // Cut off at ==== marker
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return content.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: cut off at first "{" if marker not found
+  // const jsonStartIndex = content.indexOf('{');
+  // if (jsonStartIndex > 0) {
+  //   return content.substring(0, jsonStartIndex).trim();
+  // }
+  
+  return content;
+};
+
+// Helper function to cut off text at the start of options during streaming
+const cutOffAtJsonStart = (content: string): string => {
+  // First try to find the ==== marker
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return content.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: find the position where the JSON starts (first "{")
+  const jsonStartIndex = content.indexOf('{');
+  if (jsonStartIndex > 0) {
+    return content.substring(0, jsonStartIndex).trim();
+  }
+  
+  return content;
 };
 
 type PartProps = {
@@ -87,18 +139,21 @@ const Part = memo(
         return null;
       }
       
-      // Check if this is a Flow Architect AI JSON message
-      if (isFlowMessage(text)) {
-        return (
-          <Container>
-            <FlowMessage content={text} isCreatedByUser={isCreatedByUser} />
-          </Container>
-        );
+      // Handle Flow messages and regular messages with the same logic
+      let displayText = text;
+      
+      // If this is a complete Flow message with options, extract the message text
+      if (hasFlowOptions(text)) {
+        displayText = extractFlowMessageText(text);
+      }
+      // If JSON is starting to appear during streaming, cut off the text
+      else if (isStartingFlowOptions(text)) {
+        displayText = cutOffAtJsonStart(text);
       }
       
       return (
         <Container>
-          <Text text={text} isCreatedByUser={isCreatedByUser} showCursor={showCursor} />
+          <Text text={displayText} isCreatedByUser={isCreatedByUser} showCursor={showCursor} />
         </Container>
       );
     } else if (part.type === ContentTypes.THINK) {

@@ -14,6 +14,50 @@ import Markdown from './Markdown';
 import { cn } from '~/utils';
 import store from '~/store';
 
+// Helper function to check if content contains Flow options (simplified format)
+const hasFlowOptions = (content: string): boolean => {
+  // Look for the pattern: text followed by options array
+  // Example: "Question text\n\n[\"Option 1\", \"Option 2\", \"Option 3\"]"
+  const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
+  return optionsMatch !== null;
+};
+
+// Helper function to extract the full message text (without options array)
+const extractFlowMessageText = (content: string): string => {
+  // Cut off at === marker
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return content.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: cut off at first "{" if marker not found
+  // const jsonStartIndex = content.indexOf('{');
+  // if (jsonStartIndex > 0) {
+  //   return content.substring(0, jsonStartIndex).trim();
+  // }
+  
+  return content;
+};
+
+// Helper function to cut off text at the options marker to prevent showing any JSON structure
+const cutOffAtJsonStart = (text: string): string => {
+  // First try to find the ==== marker
+  const optionsMarker = '====';
+  const markerIndex = text.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return text.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: find the position where the JSON starts (first "{")
+  const jsonStartIndex = text.indexOf('{');
+  if (jsonStartIndex > 0) {
+    return text.substring(0, jsonStartIndex).trim();
+  }
+  
+  return text;
+};
+
 export const ErrorMessage = ({
   text,
   message,
@@ -81,13 +125,22 @@ const DisplayMessage = ({ text, isCreatedByUser, message, showCursor }: TDisplay
     [message.messageId, latestMessage?.messageId],
   );
 
+  // Process Flow messages to remove JSON structure
+  let processedText = text;
+  
+  if (hasFlowOptions(text)) {
+    processedText = extractFlowMessageText(text);
+  } else if (text.includes('{')) {
+    processedText = cutOffAtJsonStart(text);
+  }
+
   let content: React.ReactElement;
   if (!isCreatedByUser) {
-    content = <Markdown content={text} isLatestMessage={isLatestMessage} />;
+    content = <Markdown content={processedText} isLatestMessage={isLatestMessage} />;
   } else if (enableUserMsgMarkdown) {
-    content = <MarkdownLite content={text} />;
+    content = <MarkdownLite content={processedText} />;
   } else {
-    content = <>{text}</>;
+    content = <>{processedText}</>;
   }
 
   return (
@@ -95,7 +148,7 @@ const DisplayMessage = ({ text, isCreatedByUser, message, showCursor }: TDisplay
       <div
         className={cn(
           isSubmitting ? 'submitting' : '',
-          showCursorState && !!text.length ? 'result-streaming' : '',
+          showCursorState && !!processedText.length ? 'result-streaming' : '',
           'markdown prose message-content dark:prose-invert light w-full break-words',
           isCreatedByUser && !enableUserMsgMarkdown && 'whitespace-pre-wrap',
           isCreatedByUser ? 'dark:text-gray-20' : 'dark:text-gray-100',

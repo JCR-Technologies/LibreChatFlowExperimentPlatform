@@ -25,32 +25,51 @@ export const useFlowSelection = (index: number) => {
     enabled: !!conversation?.conversationId,
   });
 
-  // Parse JSON format from Flow Architect AI messages
-  const parseFlowJSON = useCallback((message: string): { message: string; options: string[] } | null => {
+  // Parse simplified Flow format from Flow Architect AI messages
+  const parseFlowMessage = useCallback((message: string): { message: string; options: string[] } | null => {
+    // Check if the message contains options array
+    const optionsMatch = message.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
+    if (!optionsMatch) {
+      return null;
+    }
+
     try {
-      // Try to parse the entire message as JSON
-      const parsed = JSON.parse(message);
-      if (parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options)) {
+      // Extract options from the array
+      const optionsString = optionsMatch[0];
+      const parsed = JSON.parse(optionsString);
+      if (Array.isArray(parsed)) {
+        const options = parsed.filter((opt: any) => typeof opt === 'string');
+        
+        // Extract the message text (cut off at === marker)
+        let messageText = message;
+        const optionsMarker = '====';
+        const markerIndex = message.indexOf(optionsMarker);
+        if (markerIndex > 0) {
+          messageText = message.substring(0, markerIndex).trim();
+        } else {
+          // Fallback: cut off at first "{" if marker not found
+          // const jsonStartIndex = message.indexOf('{');
+          // if (jsonStartIndex > 0) {
+          //   messageText = message.substring(0, jsonStartIndex).trim();
+          // }
+        }
+        
         return {
-          message: parsed.message,
-          options: parsed.options.filter((opt: any) => typeof opt === 'string')
+          message: messageText,
+          options: options
         };
       }
     } catch (error) {
-      // If direct JSON parsing fails, try to find JSON within the message
-      const jsonMatch = message.match(/\{[\s\S]*"message"[\s\S]*"options"[\s\S]*\}/);
-      if (jsonMatch) {
-        try {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed && typeof parsed.message === 'string' && Array.isArray(parsed.options)) {
-            return {
-              message: parsed.message,
-              options: parsed.options.filter((opt: any) => typeof opt === 'string')
-            };
-          }
-        } catch (jsonError) {
-          console.log("Failed to parse JSON within message:", jsonError);
-        }
+      // If parsing fails, try to extract options manually
+      const optionMatches = message.match(/"([^"]+)"/g);
+      if (optionMatches) {
+        const options = optionMatches.map(match => match.slice(1, -1)); // Remove quotes
+        const messageText = message.replace(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/, '').trim();
+        
+        return {
+          message: messageText,
+          options: options
+        };
       }
     }
     
@@ -100,10 +119,10 @@ export const useFlowSelection = (index: number) => {
       
       console.log("Extracted content:", content);
       
-      // Try to parse as JSON format
-      const flowData = parseFlowJSON(content);
+      // Try to parse as simplified Flow format
+      const flowData = parseFlowMessage(content);
       if (flowData && flowData.options.length > 0) {
-        console.log("Parsed Flow JSON:", flowData);
+        console.log("Parsed Flow Message:", flowData);
         setSelectionState(prev => ({
           ...prev,
           message: flowData.message,
@@ -117,7 +136,7 @@ export const useFlowSelection = (index: number) => {
     
     // If no options found, hide the selection buttons
     setSelectionState(prev => ({ ...prev, isVisible: false, options: [], selectedOptions: [], message: '' }));
-  }, [messagesTree, parseFlowJSON]);
+  }, [messagesTree, parseFlowMessage]);
 
   // Update options when conversation changes
   useEffect(() => {

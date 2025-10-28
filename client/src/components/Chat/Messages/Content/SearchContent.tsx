@@ -17,6 +17,50 @@ import MarkdownLite from './MarkdownLite';
 import store from '~/store';
 import Part from './Part';
 
+// Helper function to check if content contains Flow options (simplified format)
+const hasFlowOptions = (content: string): boolean => {
+  // Look for the pattern: text followed by options array
+  // Example: "Question text\n\n[\"Option 1\", \"Option 2\", \"Option 3\"]"
+  const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
+  return optionsMatch !== null;
+};
+
+// Helper function to extract the full message text (without options array)
+const extractFlowMessageText = (content: string): string => {
+  // Cut off at ==== marker
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return content.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: cut off at first "{" if marker not found
+  // const jsonStartIndex = content.indexOf('{');
+  // if (jsonStartIndex > 0) {
+  //   return content.substring(0, jsonStartIndex).trim();
+  // }
+  
+  return content;
+};
+
+// Helper function to cut off text at the options marker to prevent showing any JSON structure
+const cutOffAtJsonStart = (text: string): string => {
+  // First try to find the ==== marker
+  const optionsMarker = '====';
+  const markerIndex = text.indexOf(optionsMarker);
+  if (markerIndex > 0) {
+    return text.substring(0, markerIndex).trim();
+  }
+  
+  // Fallback: find the position where the JSON starts (first "{")
+  const jsonStartIndex = text.indexOf('{');
+  if (jsonStartIndex > 0) {
+    return text.substring(0, jsonStartIndex).trim();
+  }
+  
+  return text;
+};
+
 const SearchContent = ({
   message,
   attachments,
@@ -67,6 +111,14 @@ const SearchContent = ({
     );
   }
 
+  // Process Flow messages to remove JSON structure
+  let processedText = message.text || '';
+  if (hasFlowOptions(processedText)) {
+    processedText = extractFlowMessageText(processedText);
+  } else if (processedText.includes('{')) {
+    processedText = cutOffAtJsonStart(processedText);
+  }
+
   return (
     <div
       className={cn(
@@ -76,7 +128,7 @@ const SearchContent = ({
       )}
       dir="auto"
     >
-      <MarkdownLite content={message.text || ''} />
+      <MarkdownLite content={processedText} />
     </div>
   );
 };
