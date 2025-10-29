@@ -109,12 +109,13 @@ export default function BadgeRowProvider({
 
       // Always set values for all tools (use defaults if not in localStorage)
       // If ephemeralAgent is null, create a new object with just our tool values
+      // Artifacts are ALWAYS enabled by default with shadcnui mode
       setEphemeralAgent((prev) => ({
         ...(prev || {}),
         [Tools.execute_code]: initialValues[Tools.execute_code] ?? false,
         [Tools.web_search]: initialValues[Tools.web_search] ?? false,
         [Tools.file_search]: initialValues[Tools.file_search] ?? false,
-        [AgentCapabilities.artifacts]: initialValues[AgentCapabilities.artifacts] ?? false,
+        [AgentCapabilities.artifacts]: initialValues[AgentCapabilities.artifacts] ?? 'shadcnui',
       }));
     }
   }, [key, isSubmitting, setEphemeralAgent]);

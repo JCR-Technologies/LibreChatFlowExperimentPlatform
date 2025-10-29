@@ -127,6 +127,12 @@ export default function useChatFunctions({
       });
     }
 
+    // Add artifacts value from ephemeralAgent to conversation
+    // Artifacts are ALWAYS enabled by default with shadcnui mode
+    if (conversation) {
+      conversation.artifacts = (ephemeralAgent as any)?.artifacts ?? 'shadcnui';
+    }
+
     // construct the query message
     // this is not a real messageId, it is used as placeholder before real messageId returned
     text = text.trim();

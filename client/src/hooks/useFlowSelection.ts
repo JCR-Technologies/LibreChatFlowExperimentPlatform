@@ -40,18 +40,16 @@ export const useFlowSelection = (index: number) => {
       if (Array.isArray(parsed)) {
         const options = parsed.filter((opt: any) => typeof opt === 'string');
         
-        // Extract the message text (cut off at === marker)
+        // Extract the message text (cut off at ==== marker, but only if followed by options JSON)
         let messageText = message;
         const optionsMarker = '====';
         const markerIndex = message.indexOf(optionsMarker);
         if (markerIndex > 0) {
-          messageText = message.substring(0, markerIndex).trim();
-        } else {
-          // Fallback: cut off at first "{" if marker not found
-          // const jsonStartIndex = message.indexOf('{');
-          // if (jsonStartIndex > 0) {
-          //   messageText = message.substring(0, jsonStartIndex).trim();
-          // }
+          // Check if the marker is followed by options JSON pattern
+          const afterMarker = message.substring(markerIndex + optionsMarker.length).trim();
+          if (afterMarker.startsWith('{') && afterMarker.includes('"options"')) {
+            messageText = message.substring(0, markerIndex).trim();
+          }
         }
         
         return {

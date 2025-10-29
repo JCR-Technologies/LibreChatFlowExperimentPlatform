@@ -27,18 +27,16 @@ const hasFlowOptions = (content: string): boolean => {
 
 // Helper function to extract the full message text (without options array)
 const extractFlowMessageText = (content: string): string => {
-  // Cut off at ==== marker
+  // Cut off at ==== marker, but only if it's followed by options JSON
   const optionsMarker = '====';
   const markerIndex = content.indexOf(optionsMarker);
   if (markerIndex > 0) {
-    return content.substring(0, markerIndex).trim();
+    // Check if the marker is followed by options JSON pattern
+    const afterMarker = content.substring(markerIndex + optionsMarker.length).trim();
+    if (afterMarker.startsWith('{') && afterMarker.includes('"options"')) {
+      return content.substring(0, markerIndex).trim();
+    }
   }
-  
-  // Fallback: cut off at first "{" if marker not found
-  // const jsonStartIndex = content.indexOf('{');
-  // if (jsonStartIndex > 0) {
-  //   return content.substring(0, jsonStartIndex).trim();
-  // }
   
   return content;
 };
@@ -49,7 +47,11 @@ const cutOffAtJsonStart = (text: string): string => {
   const optionsMarker = '====';
   const markerIndex = text.indexOf(optionsMarker);
   if (markerIndex > 0) {
-    return text.substring(0, markerIndex).trim();
+    // Check if the marker is followed by options JSON pattern
+    const afterMarker = text.substring(markerIndex + optionsMarker.length).trim();
+    if (afterMarker.startsWith('{') && afterMarker.includes('"options"')) {
+      return text.substring(0, markerIndex).trim();
+    }
   }
   
   // Fallback: find the position where the JSON starts (first "{")
