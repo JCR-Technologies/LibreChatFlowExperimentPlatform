@@ -130,7 +130,11 @@ export default function useChatFunctions({
     // Add artifacts value from ephemeralAgent to conversation
     // Artifacts are ALWAYS enabled by default with shadcnui mode
     if (conversation) {
-      conversation.artifacts = (ephemeralAgent as any)?.artifacts ?? 'shadcnui';
+      const artifactsValue = (ephemeralAgent as any)?.artifacts ?? 'shadcnui';
+      // Ensure artifacts is always a string (not a boolean)
+      conversation.artifacts = typeof artifactsValue === 'boolean' 
+        ? (artifactsValue ? 'shadcnui' : '') 
+        : artifactsValue;
     }
 
     // construct the query message

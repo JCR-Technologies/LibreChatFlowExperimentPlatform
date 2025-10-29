@@ -83,6 +83,14 @@ const buildDefaultConvo = ({
 
   defaultConvo.tools = lastConversationSetup?.tools ?? lastSelectedTools ?? defaultConvo.tools;
 
+  // Ensure artifacts is always a string (not a boolean)
+  const artifactsValue = defaultConvo.artifacts ?? lastConversationSetup?.artifacts;
+  if (artifactsValue !== undefined) {
+    defaultConvo.artifacts = typeof artifactsValue === 'boolean' 
+      ? (artifactsValue ? 'shadcnui' : '') 
+      : artifactsValue;
+  }
+
   return defaultConvo;
 };
 

@@ -171,7 +171,15 @@ export const parseConvo = ({
   //   schema = schemaCreators[endpoint](defaultSchema);
   // }
 
-  const convo = schema?.parse(conversation) as s.TConversation | undefined;
+  // Normalize artifacts field: ensure it's always a string (not a boolean)
+  const normalizedConversation = conversation ? { ...conversation } : conversation;
+  if (normalizedConversation && 'artifacts' in normalizedConversation && normalizedConversation.artifacts !== undefined) {
+    if (typeof normalizedConversation.artifacts === 'boolean') {
+      normalizedConversation.artifacts = normalizedConversation.artifacts ? 'shadcnui' : '';
+    }
+  }
+
+  const convo = schema?.parse(normalizedConversation) as s.TConversation | undefined;
   const { models, secondaryModels } = possibleValues ?? {};
 
   if (models && convo) {
@@ -343,7 +351,15 @@ export const parseCompactConvo = ({
     throw new Error(`Unknown endpointType: ${endpointType}`);
   }
 
-  const convo = schema.parse(conversation) as s.TConversation | null;
+  // Normalize artifacts field: ensure it's always a string (not a boolean)
+  const normalizedConversation = { ...conversation };
+  if ('artifacts' in normalizedConversation && normalizedConversation.artifacts !== undefined) {
+    if (typeof normalizedConversation.artifacts === 'boolean') {
+      normalizedConversation.artifacts = normalizedConversation.artifacts ? 'shadcnui' : '';
+    }
+  }
+
+  const convo = schema.parse(normalizedConversation) as s.TConversation | null;
   // const { models, secondaryModels } = possibleValues ?? {};
   const { models } = possibleValues ?? {};
 

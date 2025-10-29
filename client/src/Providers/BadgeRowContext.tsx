@@ -101,7 +101,11 @@ export default function BadgeRowProvider({
 
       if (artifactsToggleValue !== null) {
         try {
-          initialValues[AgentCapabilities.artifacts] = JSON.parse(artifactsToggleValue);
+          const parsed = JSON.parse(artifactsToggleValue);
+          // Ensure artifacts is always a string (convert boolean to string if needed)
+          initialValues[AgentCapabilities.artifacts] = typeof parsed === 'boolean' 
+            ? (parsed ? 'shadcnui' : '') 
+            : parsed;
         } catch (e) {
           console.error('Failed to parse artifacts toggle value:', e);
         }
