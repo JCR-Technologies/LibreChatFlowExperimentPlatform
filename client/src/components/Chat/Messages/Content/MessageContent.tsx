@@ -16,10 +16,19 @@ import store from '~/store';
 
 // Helper function to check if content contains Flow options (simplified format)
 const hasFlowOptions = (content: string): boolean => {
-  // Look for the pattern: text followed by options array
-  // Example: "Question text\n\n[\"Option 1\", \"Option 2\", \"Option 3\"]"
-  const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
-  return optionsMatch !== null;
+  // Check if the message contains the ==== marker followed by options JSON
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  
+  if (markerIndex < 0) {
+    return false; // No marker found
+  }
+
+  // Extract everything after the marker
+  const afterMarker = content.substring(markerIndex + optionsMarker.length).trim();
+  
+  // Check if it starts with {"options": [...]}
+  return afterMarker.startsWith('{') && afterMarker.includes('"options"');
 };
 
 // Helper function to extract the full message text (without options array)

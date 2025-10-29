@@ -27,42 +27,46 @@ export const useFlowSelection = (index: number) => {
 
   // Parse simplified Flow format from Flow Architect AI messages
   const parseFlowMessage = useCallback((message: string): { message: string; options: string[] } | null => {
-    // Check if the message contains options array
-    const optionsMatch = message.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
-    if (!optionsMatch) {
-      return null;
+    // First check if the message contains the ==== marker followed by options JSON
+    const optionsMarker = '====';
+    const markerIndex = message.indexOf(optionsMarker);
+    
+    if (markerIndex < 0) {
+      return null; // No marker found, not a Flow message
+    }
+
+    // Extract everything after the marker
+    const afterMarker = message.substring(markerIndex + optionsMarker.length).trim();
+    
+    // Check if it starts with {"options": [...]}
+    if (!afterMarker.startsWith('{') || !afterMarker.includes('"options"')) {
+      return null; // Marker not followed by options JSON
     }
 
     try {
-      // Extract options from the array
-      const optionsString = optionsMatch[0];
-      const parsed = JSON.parse(optionsString);
-      if (Array.isArray(parsed)) {
-        const options = parsed.filter((opt: any) => typeof opt === 'string');
+      // Try to parse the JSON after the marker
+      const jsonMatch = afterMarker.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return null;
+      }
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed && typeof parsed === 'object' && Array.isArray(parsed.options)) {
+        const options = parsed.options.filter((opt: any) => typeof opt === 'string');
         
-        // Extract the message text (cut off at ==== marker, but only if followed by options JSON)
-        let messageText = message;
-        const optionsMarker = '====';
-        const markerIndex = message.indexOf(optionsMarker);
-        if (markerIndex > 0) {
-          // Check if the marker is followed by options JSON pattern
-          const afterMarker = message.substring(markerIndex + optionsMarker.length).trim();
-          if (afterMarker.startsWith('{') && afterMarker.includes('"options"')) {
-            messageText = message.substring(0, markerIndex).trim();
-          }
+        if (options.length > 0) {
+          // Extract the message text (everything before the marker)
+          const messageText = message.substring(0, markerIndex).trim();
+          
+          return {
+            message: messageText,
+            options: options
+          };
         }
-        
-        return {
-          message: messageText,
-          options: options
-        };
       }
     } catch (error) {
-
-      return {
-        message: message,
-        options: []
-      };
+      // If parsing fails, it's not a valid Flow message
+      return null;
     }
     
     return null;

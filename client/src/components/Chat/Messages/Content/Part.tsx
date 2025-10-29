@@ -19,16 +19,34 @@ import Image from './Image';
 
 // Helper function to check if content contains Flow options (simplified format)
 const hasFlowOptions = (content: string): boolean => {
-  // Look for the pattern: text followed by options array
-  // Example: "Question text\n\n[\"Option 1\", \"Option 2\", \"Option 3\"]"
-  const optionsMatch = content.match(/\[[\s\S]*"[\w\s\/]+"[\s\S]*\]/);
-  return optionsMatch !== null;
+  // Check if the message contains the ==== marker followed by options JSON
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  
+  if (markerIndex < 0) {
+    return false; // No marker found
+  }
+
+  // Extract everything after the marker
+  const afterMarker = content.substring(markerIndex + optionsMarker.length).trim();
+  
+  // Check if it starts with {"options": [...]}
+  return afterMarker.startsWith('{') && afterMarker.includes('"options"');
 };
 
 // Helper function to check if content is starting to show options during streaming
 const isStartingFlowOptions = (content: string): boolean => {
-  // Check if the content contains the beginning of an options array
-  return content.includes('{') && content.includes('"');
+  // Check if the content contains the ==== marker
+  const optionsMarker = '====';
+  const markerIndex = content.indexOf(optionsMarker);
+  
+  if (markerIndex < 0) {
+    return false; // No marker found
+  }
+
+  // Check if the marker is followed by the start of options JSON
+  const afterMarker = content.substring(markerIndex + optionsMarker.length).trim();
+  return afterMarker.startsWith('{');
 };
 
 // Helper function to extract options from simplified Flow format
